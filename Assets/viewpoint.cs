@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿	using UnityEngine;
 using System.Collections;
 using System.Net;
 using System;
@@ -47,15 +47,41 @@ public class viewpoint : MonoBehaviour {
             {
                 // do stuff
                 Byte[] receiveBytes = client.Receive(ref RemoteIpEndPoint);
-                string returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                // Uses the IPEndPoint object to determine which of these two hosts responded.
-                Console.WriteLine("This is the message you received " +
-                                             returnData.ToString());
-                Console.WriteLine("This message was sent from " +
-                                            RemoteIpEndPoint.Address.ToString() +
-                                            " on their port number " +
-                                            RemoteIpEndPoint.Port.ToString());
+				Int32 r = 0;
+				for (int i=0; i<4; i++){
+					r += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
+				}
+
+				Int32 y = 0;
+				for (int i=4; i<8; i++){
+					y += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
+				}
+
+				Int32 p = 0;
+				for (int i=8; i<12; i++){
+					p += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
+				}
+				print(r);
+				print(y);
+				print(p);
+				gyror = (r-180000.0)/1000.0;
+				gyroY = (y-180000.0)/1000.0;
+				gyroP = (p-180000.0)/1000.0;
+					
+
+//				string returnData = Encoding.UTF8.GetString(receiveBytes);
+//				print(returnData);
+//				var base64EncodedBytes = System.Convert.FromBase64String(returnData);
+//				print(System.Text.Encoding.UTF8.GetString(base64EncodedBytes));
+//
+//                // Uses the IPEndPoint object to determine which of these two hosts responded.
+//				print("This is the message you received " +
+//                                             returnData.ToString());
+//				print("This message was sent from " +
+//                                            RemoteIpEndPoint.Address.ToString() +
+//                                            " on their port number " +
+//                                            RemoteIpEndPoint.Port.ToString());
                 Thread.Sleep(10);
             }
 
