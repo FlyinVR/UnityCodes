@@ -1,5 +1,6 @@
-﻿	using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System;
 using System.Net.Sockets;
@@ -8,9 +9,9 @@ using System.Text;
 
 public static class GlobalVariables
 {
-    public static float gyroY;
-    public static float gyroR;
-    public static float gyroP;
+	public static double gyroY;
+	public static double gyroR;
+	public static double gyroP;
 
 }
 
@@ -47,29 +48,23 @@ public class viewpoint : MonoBehaviour {
             {
                 // do stuff
                 Byte[] receiveBytes = client.Receive(ref RemoteIpEndPoint);
+				if (BitConverter.IsLittleEndian)
+					Array.Reverse(receiveBytes);
+				
+				Byte[] slice1 = new List<Byte>(receiveBytes).GetRange(0, 4).ToArray();
+				Int32 p = BitConverter.ToInt32(slice1,0);
+//				print(p);
+				Byte[] slice2 = new List<Byte>(receiveBytes).GetRange(4, 4).ToArray();
+				Int32 y = BitConverter.ToInt32(slice2,0);
+//				print(y);
+				Byte[] slice3 = new List<Byte>(receiveBytes).GetRange(8, 4).ToArray();
+				Int32 r = BitConverter.ToInt32(slice3,0);
+//				print(r);
 
-				Int32 r = 0;
-				for (int i=0; i<4; i++){
-					r += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
-				}
-
-				Int32 y = 0;
-				for (int i=4; i<8; i++){
-					y += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
-				}
-
-				Int32 p = 0;
-				for (int i=8; i<12; i++){
-					p += BitConverter.ToInt32(receiveBytes,i)<<(i*8);
-				}
-				print(r);
-				print(y);
-				print(p);
-				gyror = (r-180000.0)/1000.0;
-				gyroY = (y-180000.0)/1000.0;
-				gyroP = (p-180000.0)/1000.0;
+				GlobalVariables.gyroR = (r-180000.0)/1000.0;
+				GlobalVariables.gyroY = (y-180000.0)/1000.0;
+				GlobalVariables.gyroP = (p-180000.0)/1000.0;
 					
-
 //				string returnData = Encoding.UTF8.GetString(receiveBytes);
 //				print(returnData);
 //				var base64EncodedBytes = System.Convert.FromBase64String(returnData);
