@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-<<<<<<< HEAD
 using UnityEngine.SceneManagement;
-=======
+
 using System.Collections.Generic;
 using System.Net;
 using System;
@@ -17,7 +16,6 @@ public static class GlobalVariables
 	public static double gyroP;
 
 }
->>>>>>> origin/master
 
 public class viewpoint : MonoBehaviour {
     Thread receiveThread;
@@ -25,19 +23,11 @@ public class viewpoint : MonoBehaviour {
     // Use this for initialization
     void Start () {
         initUDP();
-    }
-
-<<<<<<< HEAD
-	// Use this for initialization
-	void Start () {
         transform.position = new Vector3(813.0f, 330.0f, 874.0f);
         Quaternion rotation = Quaternion.Euler(0.0f, -139.346f, 0.0f);
         transform.rotation = rotation;
     }
-	
-	// Update is called once per frame
-	void Update () {
-=======
+
     private void initUDP()
     {
         receiveThread = new Thread(
@@ -103,7 +93,6 @@ public class viewpoint : MonoBehaviour {
     }
     // Update is called once per frame
     void Update () {
->>>>>>> origin/master
         transform.position += transform.forward * Time.deltaTime * 50.0f;
 
         transform.Rotate(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"), 0.0f);
