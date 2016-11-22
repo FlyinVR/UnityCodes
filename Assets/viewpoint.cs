@@ -24,77 +24,62 @@ public class viewpoint : MonoBehaviour
     Thread receiveThread;
     UdpClient client;
 
-    public float g = 9.8f;
-    public float c_d = 0.5f;
-    public float c_l = 1.0f;
-    public Vector3 up = new Vector3(-1.0f, 10.0f, -1.0f);
-    public Vector3 v = new Vector3(-1.0f, -0.10f, -1.0f);
-    public Vector3 e_xz;
-    public Vector3 e_y = new Vector3(0.0f, 1.0f, 0.0f);
-    public float c = 1.0f;
+    private float g = 9.8f;
+    private float density = 1.0f;
+    private float fric = 0.001f;
+    private float C = 1.0f;
+    private Vector3 up = new Vector3(-1.0f, 10.0f, -1.2f);
+    private Vector3 tip = new Vector3(-1.0f, -1.0f, -2.0f);
+    //	private Vector3 tip = new Vector3(-0.0f, -1.0f, 0.0f);
+    private Vector3 v = new Vector3(-2.0f, 0.0f, -2.0f);
+    private Vector3 e_y = new Vector3(0.0f, 1.0f, 0.0f);
 
 
     // Use this for initialization
     void Start()
     {
+        g = 9.8f;
+        density = 1.0f;
+        fric = 0.001f;
+        C = 1.0f;
+        up = new Vector3(-1.0f, 10.0f, -1.2f);
+        tip = new Vector3(-1.0f, -1.0f, -2.0f);
+        //	private Vector3 tip = new Vector3(-0.0f, -1.0f, 0.0f);
+        v = new Vector3(-2.0f, 0.0f, -2.0f);
+        e_y = new Vector3(0.0f, 1.0f, 0.0f);
+
         initUDP();
-        transform.position = new Vector3(813.0f, 500.0f, 874.0f);
+        up.Normalize();
+        //up = new Vector3(-1.0f, 10.0f, -1.0f);
+        //		tip = Vector3.Cross (up, Vector3.Cross (v, up)).normalized;
+        tip.Normalize();
+        transform.position = new Vector3(6501.706f, 3278.307f, 6963.654f);
         //transform.position = new Vector3(813.0f, 330.0f, 874.0f);
-        // Quaternion rotation = Quaternion.Euler(0.0f, -139.346f, 0.0f);
         Quaternion rotation = Quaternion.LookRotation(v, up);
         transform.rotation = rotation;
-
-        e_xz = (v-Vector3.Dot(v,e_y)*e_y).normalized;
-        print(v);
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        UpdatePosition();
-        //transform.Rotate(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"), 0.0f);
-
-        UpdateV();
+        float v_up = Vector3.Dot(v, up);
+        Vector3 lift = density * v_up * 0.02f * v_up * up;
+        Vector3 gravity = -g * e_y;
+        Vector3 friction = -fric * Vector3.Dot(v, tip) * tip;
+        //		print ("fric:"+friction);
+        print("lift" + lift);
+        v = v + (gravity + lift) * Time.deltaTime * C;
+        transform.position += v * Time.deltaTime;
+        print("velocity: " + v);
+        Quaternion rotation = Quaternion.LookRotation(v, up);
+        transform.rotation = rotation;
 
         float terrainHeightWhereWeAre = Terrain.activeTerrain.SampleHeight(transform.position);
         if (terrainHeightWhereWeAre > transform.position.y)
         {
             reset();
         }
-    }
-
-    void UpdatePosition()
-    {
-        transform.position += v * Time.deltaTime;
-        Quaternion rotation = Quaternion.LookRotation(v, up);
-        print(Quaternion.Equals(transform.rotation, rotation));
-        transform.rotation = rotation;
-        print(transform.position);
-        print(v.ToString("F8"));
-    }
-
-    void UpdateV()
-    {
-        float s_d = Vector3.Dot(v, e_y);
-        float s_l = Vector3.Dot(v, e_xz);
-        float k = GetK();
-    
-        float s_q = (float)Math.Sqrt(Math.Pow(s_d, 2) + Math.Pow(s_l, 2));
-        float s_l_old = s_l;
-        s_l -= (k * s_q * (c_l * s_d - c_d * s_l)) * c * Time.deltaTime;
-        s_d -= (g - k * s_q * (c_l * s_l_old + c_d * s_d)) * c * Time.deltaTime;
-        
-        //Vector3 v_old = v;
-        v = s_d * e_y + s_l * e_xz;
-        //up = (v - v_old).normalized;
-        //print("up:");
-        //print(up);
-    }
-
-    float GetK()
-    {
-        return 0.024f * Vector3.Cross(v.normalized, e_y).magnitude;
     }
 
     void OnCollisionEnter(Collision col)
