@@ -9,6 +9,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 
+
+
 public static class GlobalVariables
 {
     public static double gyroY;
@@ -21,14 +23,92 @@ public class viewpoint : MonoBehaviour
 {
     Thread receiveThread;
     UdpClient client;
+
+    public float g = 9.8f;
+    public float c_d = 0.5f;
+    public float c_l = 1.0f;
+    public Vector3 up = new Vector3(-1.0f, 10.0f, -1.0f);
+    public Vector3 v = new Vector3(-1.0f, -0.10f, -1.0f);
+    public Vector3 e_xz;
+    public Vector3 e_y = new Vector3(0.0f, 1.0f, 0.0f);
+    public float c = 1.0f;
+
+
     // Use this for initialization
     void Start()
     {
         initUDP();
-        transform.position = new Vector3(813.0f, 330.0f, 874.0f);
-        Quaternion rotation = Quaternion.Euler(0.0f, -139.346f, 0.0f);
+        transform.position = new Vector3(813.0f, 500.0f, 874.0f);
+        //transform.position = new Vector3(813.0f, 330.0f, 874.0f);
+        // Quaternion rotation = Quaternion.Euler(0.0f, -139.346f, 0.0f);
+        Quaternion rotation = Quaternion.LookRotation(v, up);
         transform.rotation = rotation;
+
+        e_xz = (v-Vector3.Dot(v,e_y)*e_y).normalized;
+        print(v);
     }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        UpdatePosition();
+        //transform.Rotate(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"), 0.0f);
+
+        UpdateV();
+
+        float terrainHeightWhereWeAre = Terrain.activeTerrain.SampleHeight(transform.position);
+        if (terrainHeightWhereWeAre > transform.position.y)
+        {
+            reset();
+        }
+    }
+
+    void UpdatePosition()
+    {
+        transform.position += v * Time.deltaTime;
+        Quaternion rotation = Quaternion.LookRotation(v, up);
+        print(Quaternion.Equals(transform.rotation, rotation));
+        transform.rotation = rotation;
+        print(transform.position);
+        print(v.ToString("F8"));
+    }
+
+    void UpdateV()
+    {
+        float s_d = Vector3.Dot(v, e_y);
+        float s_l = Vector3.Dot(v, e_xz);
+        float k = GetK();
+    
+        float s_q = (float)Math.Sqrt(Math.Pow(s_d, 2) + Math.Pow(s_l, 2));
+        float s_l_old = s_l;
+        s_l -= (k * s_q * (c_l * s_d - c_d * s_l)) * c * Time.deltaTime;
+        s_d -= (g - k * s_q * (c_l * s_l_old + c_d * s_d)) * c * Time.deltaTime;
+        
+        //Vector3 v_old = v;
+        v = s_d * e_y + s_l * e_xz;
+        //up = (v - v_old).normalized;
+        //print("up:");
+        //print(up);
+    }
+
+    float GetK()
+    {
+        return 0.024f * Vector3.Cross(v.normalized, e_y).magnitude;
+    }
+
+    void OnCollisionEnter(Collision col)
+    {
+        reset();
+    }
+
+    void reset()
+    {
+        if (receiveThread != null) receiveThread.Abort();
+        if (client != null) client.Close();
+        SceneManager.LoadScene(1);
+    }
+
 
     private void initUDP()
     {
@@ -93,35 +173,12 @@ public class viewpoint : MonoBehaviour
             print(e);
         }
     }
-    // Update is called once per frame
-    void Update()
-    {
-        transform.position += transform.forward * Time.deltaTime * 50.0f;
-
-        transform.Rotate(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"), 0.0f);
-
-        float terrainHeightWhereWeAre = Terrain.activeTerrain.SampleHeight(transform.position);
-        if (terrainHeightWhereWeAre > transform.position.y)
-        {
-            reset();
-        }
-    }
-
-    void OnCollisionEnter(Collision col)
-    {
-        reset();
-    }
-
-    void reset()
-    {
-        SceneManager.LoadScene(1);
-    }
 
     public void OnApplicationQuit()
     {
         // end of application
         if (receiveThread != null) receiveThread.Abort();
         if (client != null) client.Close();
-        print("Stopped");
+        // print("Stopped");
     }
 }
