@@ -53,7 +53,7 @@ public class viewpoint : MonoBehaviour
         //up = new Vector3(-1.0f, 10.0f, -1.0f);
         //		tip = Vector3.Cross (up, Vector3.Cross (v, up)).normalized;
         tip.Normalize();
-        transform.position = new Vector3(6501.706f, 3278.307f, 6963.654f);
+        transform.position = new Vector3(6501.706f, 4290f, 6963.654f);
         //transform.position = new Vector3(813.0f, 330.0f, 874.0f);
         Quaternion rotation = Quaternion.LookRotation(v, up);
         transform.rotation = rotation;
