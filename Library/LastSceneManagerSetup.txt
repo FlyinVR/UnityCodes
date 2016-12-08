@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/flight env.unity
+- path: Assets/adjust.unity
   isLoaded: 1
   isActive: 1

@@ -69,11 +69,13 @@ public class viewpoint : MonoBehaviour
         Vector3 friction = -fric * Vector3.Dot(v, tip) * tip;
         //		print ("fric:"+friction);
         print("lift" + lift);
-        v = v + (gravity + lift) * Time.deltaTime * C;
+        v = v + (gravity + lift + friction) * Time.deltaTime * C;
         transform.position += v * Time.deltaTime;
         print("velocity: " + v);
         Quaternion rotation = Quaternion.LookRotation(v, up);
-        transform.rotation = rotation;
+        Quaternion relative = Quaternion.Inverse(transform.rotation) * rotation;
+        //transform.rotation = rotation;
+        transform.Rotate(relative.eulerAngles);
 
         float terrainHeightWhereWeAre = Terrain.activeTerrain.SampleHeight(transform.position);
         if (terrainHeightWhereWeAre > transform.position.y)
