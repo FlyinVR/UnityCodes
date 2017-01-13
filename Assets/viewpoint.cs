@@ -24,6 +24,8 @@ public class viewpoint : MonoBehaviour
     Thread receiveThread;
     UdpClient client;
 
+    AudioSource audio;
+
     private float g = 9.8f;
     private float density = 1.0f;
     private float fric = 0.001f;
@@ -47,7 +49,8 @@ public class viewpoint : MonoBehaviour
         //	private Vector3 tip = new Vector3(-0.0f, -1.0f, 0.0f);
         v = new Vector3(-2.0f, 0.0f, -2.0f);
         e_y = new Vector3(0.0f, 1.0f, 0.0f);
-
+        audio = GetComponent<AudioSource>();
+        audio.volume = 0;
         initUDP();
         up.Normalize();
         //up = new Vector3(-1.0f, 10.0f, -1.0f);
@@ -70,6 +73,8 @@ public class viewpoint : MonoBehaviour
         //		print ("fric:"+friction);
         print("lift" + lift);
         v = v + (gravity + lift + friction) * Time.deltaTime * C;
+        if (audio.volume < 1)
+            audio.volume += 0.0001f;
         transform.position += v * Time.deltaTime;
         print("velocity: " + v);
         Quaternion rotation = Quaternion.LookRotation(v, up);

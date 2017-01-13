@@ -5,9 +5,11 @@ using UnityEngine.SceneManagement;
 public class ButtonGUI : MonoBehaviour {
 
     private float timer = 5.0f;
+    public TextMesh countText;
+    public string textContent = "Game Over";
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         timer = 5.0f;
     }
 	
